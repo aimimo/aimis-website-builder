@@ -8,16 +8,49 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/status", async (req, res) => {
+app.get("/users", async (_req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM users WHERE id = 1");
-        res.json({ name: result.rows[0].name });
-    } catch (error) {
-        console.error("Error fetching user data:", error);
-        res.status(500).json({
-            status: "error",
-            database: "not connected",
-        });
+        const result = await pool.query(
+            "SELECT * FROM users ORDER BY id"
+        );
+
+        res.json({ users: result.rows });
+    } catch (err) {
+        console.error("Error fetching user data:", err);
+        res.status(500).json({ error: "Failed to fetch user data" });
+    }
+});
+
+app.get("/pages", async (_req, res) => {
+    try {
+        const result = await pool.query(
+            "SELECT * FROM pages ORDER BY created_at DESC"
+        );
+
+        res.json({ pages: result.rows });
+    } catch (err) {
+        console.error("Error fetching pages:", err);
+        res.status(500).json({ error: "Failed to fetch pages" });
+    }
+});
+
+app.post("/pages", async (req, res) => {
+    try {
+        const { title, slug, content } = req.body;
+
+        const result = await pool.query(
+            `
+            INSERT INTO pages (title, slug, content)
+            VALUES ($1, $2, $3)
+            RETURNING *
+            `,
+            [title, slug, content]
+        );
+
+        res.status(201).json({ page: result.rows[0] });
+    } catch (err) {
+        console.error("Error creating page:", err);
+        res.status(500).json({ error: "Failed to create page" });
     }
 });
 
