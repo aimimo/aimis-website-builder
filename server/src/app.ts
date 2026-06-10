@@ -54,6 +54,26 @@ app.post("/pages", async (req, res) => {
     }
 });
 
+app.get("/pages/:slug", async (req, res) => {
+    try {
+        const slug = req.params.slug;
+
+        const result = await pool.query(
+            "SELECT * FROM pages WHERE slug = $1",
+            [slug]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Page not found" });
+        }
+
+        res.json( result.rows[0] );
+    } catch (err) {
+        console.error("Error fetching page:", err);
+        res.status(500).json({ error: "Failed to fetch page" });
+    }       
+});
+
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
 })
