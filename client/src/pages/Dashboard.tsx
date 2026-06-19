@@ -5,6 +5,7 @@ export default function Dashboard() {
     const [pages, setPages] = useState<any[]>([]);
     const [title, setTitle] = useState("");
     const [slug, setSlug] = useState("");
+    const [site_id, setSiteId] = useState<number>(0);
     const [content, setContent] = useState("");
 
     const loadPages = async () => {
@@ -18,8 +19,9 @@ export default function Dashboard() {
     }, []);
 
     const handleCreate = async () => {
-        await createPage({ title, slug, content });
+        await createPage({ title, site_id: site_id, slug, content });
         setTitle("");
+        setSiteId(0);
         setSlug("");
         setContent("");
         loadPages();
@@ -40,6 +42,12 @@ export default function Dashboard() {
                     placeholder="Slug"
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
+                />
+                <input
+                    type="number"
+                    placeholder="Site ID"
+                    value={site_id}
+                    onChange={(e) => setSiteId(Number(e.target.value))}
                 />
                 <textarea
                     placeholder="Content"

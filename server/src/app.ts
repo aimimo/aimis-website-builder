@@ -11,7 +11,7 @@ app.use(express.json());
 app.get("/users", async (_req, res) => {
     try {
         const result = await pool.query(
-            "SELECT * FROM users ORDER BY id"
+            "SELECT * FROM user_account ORDER BY id"
         );
 
         res.json({ users: result.rows });
@@ -21,10 +21,23 @@ app.get("/users", async (_req, res) => {
     }
 });
 
+app.get("/sites", async (_req, res) => {
+    try {
+        const result = await pool.query(
+            "SELECT * FROM site ORDER BY id"
+        );
+
+        res.json({ sites: result.rows });
+    } catch (err) {
+        console.error("Error fetching site data:", err);
+        res.status(500).json({ error: "Failed to fetch site data" });
+    }
+});
+
 app.get("/pages", async (_req, res) => {
     try {
         const result = await pool.query(
-            "SELECT * FROM pages ORDER BY created_at DESC"
+            "SELECT * FROM page ORDER BY created_at DESC"
         );
 
         res.json({ pages: result.rows });
@@ -36,15 +49,15 @@ app.get("/pages", async (_req, res) => {
 
 app.post("/pages", async (req, res) => {
     try {
-        const { title, slug, content } = req.body;
+        const { title, site_id, slug, content } = req.body;
 
         const result = await pool.query(
             `
-            INSERT INTO pages (title, slug, content)
-            VALUES ($1, $2, $3)
+            INSERT INTO page (title, site_id, slug, content)
+            VALUES ($1, $2, $3, $4)
             RETURNING *
             `,
-            [title, slug, content]
+            [title, site_id, slug, content]
         );
 
         res.status(201).json({ page: result.rows[0] });
@@ -59,7 +72,7 @@ app.get("/pages/:slug", async (req, res) => {
         const slug = req.params.slug;
 
         const result = await pool.query(
-            "SELECT * FROM pages WHERE slug = $1",
+            "SELECT * FROM page WHERE slug = $1",
             [slug]
         );
 

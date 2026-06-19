@@ -11,6 +11,7 @@ export const getPages = async () => {
 
 export const createPage = async (data: {
     title: string;
+    site_id: number;
     slug: string;
     content: string;
 }) => {
