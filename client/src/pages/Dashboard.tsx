@@ -1,17 +1,39 @@
 import { useEffect, useState } from "react";
 import { getPages, createPage } from "../api/pages";
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import type { JSONContent } from "@tiptap/react";
+
+function ContentEditor({
+    content,
+    onChange,
+}: {
+    content: JSONContent;
+    onChange: (json: JSONContent) => void;
+}) {
+    const editor = useEditor({
+        extensions: [StarterKit],
+        content,
+        onUpdate: ({ editor }) => {
+            onChange(editor.getJSON());
+        },
+    });
+
+    return <EditorContent editor={editor} />;
+}
 
 export default function Dashboard() {
     const [pages, setPages] = useState<any[]>([]);
     const [title, setTitle] = useState("");
     const [slug, setSlug] = useState("");
     const [site_id, setSiteId] = useState<number>(0);
-    const [content, setContent] = useState("");
+    const [content, setContent] = useState<JSONContent>({ type: "doc", content: [] });
 
     const loadPages = async () => {
         const data = await getPages();
         setPages(data);
         console.log("Loaded pages:", data);
+        console.log("Current content state:", data[0].content.content[0].content[0].text);
     };
 
     useEffect(() => {
@@ -23,7 +45,7 @@ export default function Dashboard() {
         setTitle("");
         setSiteId(0);
         setSlug("");
-        setContent("");
+        setContent({ type: "doc", content: [] });
         loadPages();
     };
 
@@ -49,11 +71,7 @@ export default function Dashboard() {
                     value={site_id}
                     onChange={(e) => setSiteId(Number(e.target.value))}
                 />
-                <textarea
-                    placeholder="Content"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                />
+                <ContentEditor content={content} onChange={setContent} />
                 <button onClick={handleCreate}>Create Page</button>
             </div>
 
@@ -63,7 +81,7 @@ export default function Dashboard() {
                 {pages.map((p) => (
                     <li key={p.id}>
                         <strong>{p.title}</strong> at /{p.slug}
-                        <p>{p.content}</p>
+                        <p>{p.content?.content[0]?.content[0]?.text}</p>
                     </li>
                 ))}
             </ul>

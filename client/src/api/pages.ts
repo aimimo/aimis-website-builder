@@ -1,3 +1,4 @@
+import type { JSONContent } from "@tiptap/react";
 import axios from "axios";
 
 const API = "http://localhost:3000";
@@ -13,7 +14,7 @@ export const createPage = async (data: {
     title: string;
     site_id: number;
     slug: string;
-    content: string;
+    content: JSONContent;
 }) => {
     const res = await axios.post(
         `${API}/pages`, data

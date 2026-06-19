@@ -51,13 +51,17 @@ app.post("/pages", async (req, res) => {
     try {
         const { title, site_id, slug, content } = req.body;
 
+        if (!content) {
+            return res.status(400).json({ error: "content is required" });
+        }
+
         const result = await pool.query(
             `
             INSERT INTO page (title, site_id, slug, content)
             VALUES ($1, $2, $3, $4)
             RETURNING *
             `,
-            [title, site_id, slug, content]
+            [title, site_id, slug, JSON.stringify(content)]
         );
 
         res.status(201).json({ page: result.rows[0] });
