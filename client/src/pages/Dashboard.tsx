@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getPages, createPage } from "../api/pages";
+import { getPages, getPageBySlug, createPage } from "../api/pages";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import type { JSONContent } from "@tiptap/react";
@@ -24,6 +24,7 @@ function ContentEditor({
 
 export default function Dashboard() {
   const [pages, setPages] = useState<any[]>([]);
+  const [testPage, setTestPage] = useState<any>(null);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [site_id, setSiteId] = useState<number>(0);
@@ -32,18 +33,28 @@ export default function Dashboard() {
     content: [],
   });
 
+  const loadTestPage = async () => {
+    const data = await getPageBySlug("tiptaptest");
+    setTestPage(data);
+  };
+
+  function PublicPageView({
+    pageData,
+  }: {
+    pageData: { contentHtml: string } | null;
+  }) {
+    if (!pageData) return null; // necessary to avoid trying to render before data is loaded
+    return <div dangerouslySetInnerHTML={{ __html: pageData.contentHtml }} />;
+  }
+
   const loadPages = async () => {
     const data = await getPages();
     setPages(data);
-    console.log("Loaded pages:", data);
-    console.log(
-      "Current content state:",
-      data[0].content.content[0].content[0].text,
-    );
   };
 
   useEffect(() => {
     loadPages();
+    loadTestPage();
   }, []);
 
   const handleCreate = async () => {
@@ -90,6 +101,9 @@ export default function Dashboard() {
             <p>{p.content?.content[0]?.content[0]?.text}</p>
           </li>
         ))}
+        <li>
+          <PublicPageView pageData={testPage} />
+        </li>
       </ul>
     </div>
   );

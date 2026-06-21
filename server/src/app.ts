@@ -1,7 +1,8 @@
-// Express app setup
 import express from "express";
 import cors from "cors";
 import { pool } from "./database";
+import { generateHTML } from "@tiptap/html/server";
+import StarterKit from "@tiptap/starter-kit";
 
 const app = express();
 
@@ -70,7 +71,6 @@ app.post("/pages", async (req, res) => {
 app.get("/pages/:slug", async (req, res) => {
   try {
     const slug = req.params.slug;
-
     const result = await pool.query("SELECT * FROM page WHERE slug = $1", [
       slug,
     ]);
@@ -79,7 +79,10 @@ app.get("/pages/:slug", async (req, res) => {
       return res.status(404).json({ error: "Page not found" });
     }
 
-    res.json(result.rows[0]);
+    const page = result.rows[0];
+    const contentHtml = generateHTML(page.content, [StarterKit]);
+
+    res.json({ ...page, contentHtml });
   } catch (err) {
     console.error("Error fetching page:", err);
     res.status(500).json({ error: "Failed to fetch page" });
